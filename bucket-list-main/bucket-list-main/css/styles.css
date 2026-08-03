@@ -1,0 +1,258 @@
+/* 커스텀 스타일 (Tailwind CSS 보완용) */
+
+/* ============ 필터 버튼 스타일 ============ */
+.filter-btn {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background-color: #e5e7eb;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.filter-btn.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(59, 130, 246, 0.3);
+}
+
+.filter-btn.active:hover {
+    box-shadow: 0 10px 20px rgba(59, 130, 246, 0.4);
+}
+
+/* ============ 통계 카드 스타일 ============ */
+.stat-card {
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.1);
+    transition: left 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15) !important;
+}
+
+.stat-card:hover::before {
+    left: 100%;
+}
+
+/* ============ 버킷 리스트 항목 카드 스타일 ============ */
+.bucket-item {
+    background: white;
+    border-radius: 1rem;
+    padding: 1.25rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    transition: all 0.3s ease;
+    animation: slideIn 0.3s ease-out;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.bucket-item:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.12);
+    border-color: rgba(59, 130, 246, 0.2);
+}
+
+.bucket-item.completed {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(34, 197, 94, 0.02) 100%);
+}
+
+/* 완료된 항목 스타일 */
+.bucket-item .line-through {
+    text-decoration: line-through;
+    opacity: 0.6;
+}
+
+/* ============ 슬라이드인 애니메이션 ============ */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-12px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ============ 페이드인 애니메이션 ============ */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+/* ============ 스케일인 애니메이션 ============ */
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.92);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* ============ 빈 상태 메시지 ============ */
+#emptyState {
+    animation: fadeIn 0.5s ease-in;
+}
+
+/* ============ 모달 스타일 ============ */
+#editModal {
+    animation: fadeIn 0.2s ease-in;
+}
+
+#editModal > div {
+    animation: scaleIn 0.2s ease-out;
+}
+
+/* ============ 체크박스 버튼 호버 효과 ============ */
+.bucket-item button:first-child {
+    transition: all 0.2s ease;
+}
+
+.bucket-item button:first-child:hover {
+    transform: scale(1.15);
+}
+
+.bucket-item button:first-child:active {
+    transform: scale(0.95);
+}
+
+/* ============ 수정/삭제 버튼 호버 효과 ============ */
+.bucket-item .action-btn {
+    transition: all 0.2s ease;
+}
+
+.bucket-item .action-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.bucket-item .action-btn:active {
+    transform: scale(0.95);
+}
+
+/* ============ 입력 필드 포커스 효과 ============ */
+input:focus {
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* ============ 통계 숫자 애니메이션 ============ */
+#totalCount, #completedCount, #progressCount, #completionRate {
+    transition: all 0.3s ease;
+}
+
+/* ============ 스크롤바 스타일 ============ */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+}
+
+/* ============ 모바일 반응형 ============ */
+@media (max-width: 640px) {
+    .bucket-item {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .bucket-item > div:last-child {
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 0.5rem;
+    }
+
+    .filter-btn {
+        font-size: 0.875rem;
+        padding: 0.65rem 1rem;
+    }
+
+    .stat-card {
+        padding: 1rem;
+    }
+
+    .stat-card p:first-child {
+        font-size: 2rem;
+    }
+}
+
+/* ============ 다크 모드 지원 ============ */
+@media (prefers-color-scheme: dark) {
+    body {
+        background: linear-gradient(135deg, #0f172a 0%, #1e1b4b 50%, #0f172a 100%);
+    }
+
+    .bg-white {
+        background-color: #1f2937;
+    }
+
+    .bucket-item {
+        background-color: #1f2937;
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .bucket-item:hover {
+        background-color: #111827;
+    }
+
+    .bucket-item.completed {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, rgba(34, 197, 94, 0.05) 100%);
+    }
+
+    .text-gray-800 {
+        color: #f3f4f6;
+    }
+
+    .text-gray-600 {
+        color: #d1d5db;
+    }
+
+    .border-gray-200 {
+        border-color: #374151;
+    }
+
+    .filter-btn {
+        background-color: #374151;
+        color: #d1d5db;
+    }
+
+    .filter-btn:hover {
+        background-color: #4b5563;
+    }
+}

@@ -3,6 +3,8 @@ module.exports = {
   content: [
     "./index.html",
     "./js/**/*.js",
+    "./projects/**/*.html",
+    "./projects/**/*.js",
   ],
   darkMode: 'class',
   theme: {

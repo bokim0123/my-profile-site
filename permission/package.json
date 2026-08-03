@@ -1,0 +1,21 @@
+{
+  "name": "developer-portfolio",
+  "version": "1.0.0",
+  "description": "개발자 포트폴리오 및 웹 이력서",
+  "scripts": {
+    "build:css": "tailwindcss -i ./css/input.css -o ./css/styles.css --minify",
+    "watch:css": "tailwindcss -i ./css/input.css -o ./css/styles.css --watch"
+  },
+  "keywords": [
+    "portfolio",
+    "resume",
+    "developer"
+  ],
+  "author": "bokim",
+  "license": "MIT",
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.47",
+    "tailwindcss": "^3.4.17"
+  }
+}

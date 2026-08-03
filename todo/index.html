@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TODO List</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>📝 TODO List</h1>
+        </header>
+
+        <form class="input-section" id="todoForm">
+            <div class="input-row">
+                <input type="text" id="todoInput" placeholder="할 일을 입력하세요..." required>
+                <input type="date" id="dueDateInput">
+                <select id="prioritySelect">
+                    <option value="normal">보통</option>
+                    <option value="high">높음</option>
+                    <option value="low">낮음</option>
+                </select>
+                <button type="submit" class="btn btn-primary">추가</button>
+            </div>
+        </form>
+
+        <div class="filter-section">
+            <button class="filter-btn active" data-filter="all">전체</button>
+            <button class="filter-btn" data-filter="active">진행중</button>
+            <button class="filter-btn" data-filter="completed">완료</button>
+        </div>
+
+        <div class="stats">
+            <span id="todoCount">할 일 0개</span>
+            <button type="button" class="btn btn-small" id="clearCompleted">완료된 항목 지우기</button>
+        </div>
+
+        <ul id="todoList" class="todo-list"></ul>
+
+        <div class="empty-state" id="emptyState">
+            아직 할 일이 없습니다. 위에서 할 일을 추가해보세요!
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
