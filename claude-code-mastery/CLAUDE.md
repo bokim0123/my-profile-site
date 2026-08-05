@@ -26,43 +26,60 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## 빌드 및 개발 명령어
 
 ### 개발 환경 설정
+
+**의존성 설치**:
 ```bash
-# 로컬 개발 서버 실행 (간단한 HTTP 서버)
-# VS Code의 Live Server 확장 사용 권장
+npm install
+```
+
+**개발 서버 실행**:
+```bash
+# VS Code Live Server 확장 사용 (권장)
+# 또는 Python 내장 웹 서버
+python -m http.server 8000
+
+# Node.js를 사용하는 경우
+npx http-server
 ```
 
 ### Tailwind CSS 빌드
+
+**개발 모드 (감시 빌드)**:
 ```bash
-# Tailwind CSS 초기화 (프로젝트 시작 시)
-npm install -D tailwindcss postcss autoprefixer
-npx tailwindcss init -p
+npm run watch:css
+```
+css/input.css를 모니터링하여 변경사항을 감지하고 css/style.css로 컴파일합니다.
 
-# 개발 중 Tailwind CSS 감시 빌드
-npm run build:css -- --watch
-
-# 프로덕션 빌드 (최소화)
+**프로덕션 빌드 (최소화)**:
+```bash
 npm run build:css
 ```
+
+**빌드 파이프라인**:
+- 입력: `css/input.css` (Tailwind 지시어 포함)
+- 처리: PostCSS (Tailwind CSS, Autoprefixer 플러그인)
+- 출력: `css/style.css` (최소화된 CSS)
 
 ### 프로젝트 구조
 ```
 project-root/
-├── index.html                 # 메인 HTML 파일
+├── index.html                    # 메인 HTML 파일 (포트폴리오 사이트)
+├── package.json                  # npm 의존성 설정
+├── tailwind.config.js            # Tailwind CSS 설정
+├── postcss.config.js             # PostCSS 플러그인 설정 (Tailwind, Autoprefixer)
 ├── css/
-│   ├── style.css             # 커스텀 CSS (Tailwind로 생성)
-│   └── tailwind.config.js    # Tailwind 설정
+│   ├── input.css                 # Tailwind 지시어 (build 입력)
+│   └── style.css                 # 생성된 CSS (build 출력, 최소화)
 ├── js/
-│   ├── main.js               # 기본 스크립트 (DOM 조작, 이벤트)
-│   ├── theme.js              # 다크모드/라이트모드 전환
-│   └── scroll.js             # 스크롤 애니메이션 및 네비게이션
+│   └── main.js                   # 기본 스크립트 (모바일 메뉴 토글 등)
 ├── img/
-│   ├── profile.jpg           # 프로필 이미지
-│   └── projects/             # 프로젝트 이미지
+│   └── [이미지 파일들]           # 프로필, 배경 이미지 등
 ├── assets/
-│   └── resume.pdf            # PDF 버전 이력서
-├── README.md
-├── ROADMAP.md
-├── package.json
+│   └── [기타 리소스]             # 다운로드 가능한 파일들
+├── projects/
+│   └── [프로젝트 하위 페이지들]  # 개별 프로젝트 데모 페이지
+├── calculator/                   # 계산기 프로젝트 (별도 작업)
+├── ROADMAP.md                    # 개발 로드맵
 └── .gitignore
 ```
 
@@ -101,14 +118,29 @@ project-root/
 
 ### JavaScript 작성 가이드
 - Vanilla JavaScript만 사용 (jQuery 및 프레임워크 제외)
-- 모듈화: 기능별로 별도 파일로 구분 (main.js, theme.js, scroll.js 등)
+- 파일 구조: 기능별로 별도 파일 구성 (예: main.js는 DOM 조작, 상호작용)
 - 이벤트 위임 활용으로 성능 최적화
-- 공통 유틸리티 함수는 별도 파일로 관리
+- `DOMContentLoaded` 이벤트 사용하여 DOM이 준비된 후 스크립트 실행
+- ARIA 속성을 통한 접근성 고려 (예: aria-expanded, aria-label)
+
+**현재 구현된 기능**:
+- 모바일 메뉴 토글 (main.js)
+  - 모바일 환경에서 햄버거 버튼으로 메뉴 토글
+  - ARIA 속성으로 스크린 리더 지원
+  - 메뉴 항목 클릭 시 자동 닫기
 
 ### CSS/Tailwind 규칙
-- Tailwind 클래스 우선 사용
-- 커스텀 CSS가 필요한 경우 style.css에 작성
-- CSS 변수 활용: 색상, 간격, 폰트 크기 등
+- Tailwind 클래스를 우선으로 사용하여 css/input.css에 작성
+- 커스텀 CSS가 필요한 경우만 @layer 지시어로 input.css에 추가
+- CSS 변수 활용: :root에서 색상, 간격 등 정의 (Phase 5에서 확정 예정)
+- 빌드 과정을 거친 style.css는 수동 편집 금지 (자동 생성 파일)
+
+**Tailwind 사용 팁**:
+- 반응형 접두사: `sm:`, `md:`, `lg:` 활용 (sm=640px, md=768px, lg=1024px)
+- 다크모드: `dark:` 접두사 사용 (예: `dark:bg-slate-900`)
+- 상태 변형: `hover:`, `focus:`, `disabled:` 등으로 상태별 스타일 정의
+- 색상 시스템: Tailwind 기본 색상표 활용 (blue-600, slate-200 등)
+- Custom 색상이 필요한 경우 tailwind.config.js의 theme.extend.colors에 추가
 
 ## 코딩 스타일
 
@@ -142,23 +174,72 @@ Closes #이슈번호 (있는 경우)
 - perf: 성능 개선
 - test: 테스트 추가
 
+## 파일별 책임 범위
+
+| 파일 | 책임 | 수정 시 주의사항 |
+|------|------|-----------------|
+| `index.html` | 포트폴리오 콘텐츠 및 레이아웃 구조 | 시맨틱 HTML, ARIA 속성 유지 |
+| `css/input.css` | 스타일 정의 (Tailwind + 커스텀) | 빌드 필요 (style.css 자동 생성) |
+| `js/main.js` | 상호작용 기능 및 이벤트 처리 | 브라우저 호환성, 성능 고려 |
+| `tailwind.config.js` | Tailwind CSS 설정 | 컨텐츠 경로 구성 유지 |
+| `postcss.config.js` | PostCSS 플러그인 설정 | Autoprefixer 필수 포함 |
+| `projects/` | 개별 프로젝트 데모 페이지 | 별도 HTML/CSS/JS 구성 가능 |
+
 ## 개발 워크플로우
 
 1. **기능 브랜치 생성**: `git checkout -b feature/섹션명`
-2. **개발 진행**: Live Server로 실시간 확인
+2. **개발 진행**:
+   - `npm run watch:css` 실행 (터미널 1)
+   - Live Server로 실시간 브라우저 확인 (터미널 2)
 3. **커밋**: 의미 있는 단위로 커밋
 4. **테스트**: 모든 브라우저에서 확인
    - 데스크톱: Chrome, Firefox, Safari, Edge
-   - 모바일: Chrome DevTools 모바일 에뮬레이션
+   - 모바일: Chrome DevTools 모바일 에뮬레이션 (F12 → 기기 토글)
+   - 다크모드: 브라우저 설정에서 다크 테마 적용
 5. **병합**: main 브랜치로 PR 생성 후 병합
+
+## 테스트 및 디버깅
+
+### 브라우저 테스팅
+- **반응형 테스트**: Chrome DevTools (F12) → Toggle device toolbar (Ctrl+Shift+M)
+- **다크모드 테스트**: 시스템 다크 테마 적용 또는 브라우저 개발자 도구에서 CSS 미디어 쿼리 시뮬레이션
+- **네트워크 테스트**: Throttling 설정으로 느린 네트워크 환경 시뮬레이션
+
+### 접근성 검증
+- **키보드 네비게이션**: Tab 키로 모든 상호작용 요소 접근 가능 확인
+- **스크린 리더**: ARIA 속성 정상 작동 확인 (예: aria-expanded, aria-label)
+- **색상 대비**: Lighthouse 또는 WebAIM 도구로 WCAG 기준 검증
+
+### 성능 측정
+- Chrome DevTools Lighthouse (F12 → Lighthouse)
+- 목표: Performance 90점 이상, Accessibility 95점 이상
+
+## 현재 개발 상태
+
+**완료한 단계**: Phase 1 (기본 레이아웃 구축)
+- 반응형 그리드 레이아웃
+- Hero 섹션 및 기본 네비게이션 바
+- 모바일 메뉴 (햄버거 버튼)
+- Tailwind CSS 기본 설정
+
+**진행 중인 단계**: Phase 2 (주요 섹션 개발)
+- About, Experience, Skills 섹션 구현
+
+**주의사항**:
+- `projects/` 디렉토리는 개별 프로젝트 데모용 (메인 포트폴리오와 분리)
+- `calculator/` 디렉토리는 별도 프로젝트 (포트폴리오 사이트와 무관)
+- Puppeteer 의존성: 향후 PDF 다운로드 기능(Phase 7)에서 사용 예정
 
 ## 새로운 기능 추가 시 체크리스트
 
-- [ ] ROADMAP.md에서 작업 항목 마크
-- [ ] HTML 구조 작성 (시맨틱 마크업)
-- [ ] Tailwind CSS로 스타일 적용
-- [ ] 필요시 JavaScript 로직 추가
-- [ ] 모바일/태블릿/데스크톱에서 테스트
-- [ ] 다크모드에서도 확인
-- [ ] 접근성 검토 (스크린 리더, 키보드 네비게이션)
-- [ ] 커밋 및 문서 업데이트
+- [ ] ROADMAP.md에서 해당 작업 항목 확인
+- [ ] HTML 구조 작성 (시맨틱 마크업, ARIA 속성)
+- [ ] css/input.css에 Tailwind 클래스 및 커스텀 CSS 추가
+- [ ] 필요시 js/main.js에 이벤트 처리 로직 추가
+- [ ] `npm run watch:css` 실행하여 CSS 컴파일 확인
+- [ ] Live Server로 실시간 결과 확인
+- [ ] 모바일(320px), 태블릿(768px), 데스크톱(1024px+)에서 테스트
+- [ ] 다크모드 상태에서도 시각적 오류 없는지 확인
+- [ ] 키보드 네비게이션 및 접근성 검토
+- [ ] Lighthouse 점수 확인 (성능 90+, 접근성 95+)
+- [ ] 의미 있는 메시지로 커밋 및 ROADMAP.md 업데이트

@@ -1,0 +1,59 @@
+/* Respect reduced-motion preference */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Brand-colored text selection */
+::selection {
+  background-color: #6b5b95;
+  color: #ffffff;
+}
+
+::-moz-selection {
+  background-color: #3b82f6;
+  color: #ffffff;
+}
+
+/* Slim custom scrollbar */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #6b5b95;
+  border-radius: 9999px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #8b7bb5;
+}
+
+html {
+  scrollbar-color: #6b5b95 transparent;
+}
+
+/* Subtle circuit-grid background pattern for Hero section */
+.circuit-bg {
+  background-image:
+    linear-gradient(rgba(59, 130, 246, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(59, 130, 246, 0.06) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* Dark mode: adjust circuit bg opacity */
+.dark .circuit-bg {
+  background-image:
+    linear-gradient(rgba(107, 91, 149, 0.15) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(107, 91, 149, 0.15) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
