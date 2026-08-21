@@ -8,12 +8,18 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **readLoadCell**은 산업용 자동화 장비에서 CAS 계열 로드셀 인디케이터(모델: CAS200 계열)와 RS485 시리얼 통신으로 무게 데이터를 실시간 수집하는 WinForms C# 프로그램이다.
 
-### 핵심 기능
+### 핵심 기능 (Phase 1: 기본 모니터링)
 - **연결 관리**: RS485-to-USB 컨버터를 통한 일반 COM 포트로 인디케이터 연결/해제
 - **실시간 무게 표시**: 연속 출력 모드에서 수신한 무게 데이터 실시간 표시
 - **Zero(영점) 명령**: Operator가 영점 설정 버튼 제공
 - **CSV 데이터 로깅**: 설정된 주기마다 무게값을 CSV 파일에 기록
 - **Alarm/임계값 관리**: 상한/하한 임계값 설정, 초과 시 UI 색상 경고 및 로그 기록
+
+### 추가 기능 (Phase 2: DF-2000 스타일 테스트 워크플로우)
+- **실시간 추이 그래프**: 측정 세션 중 무게-시간 추이 시각화 (GDI+ 커스텀 차트)
+- **세션 기반 테스트**: 측정 시작/종료, X1~X2 구간 지정, 자동 Pass/Fail 판정
+- **통계 계산**: Max/Min/Avg, 구간별 샘플 분석
+- **테스트 결과 로깅**: Pass/Fail 판정 결과를 CSV로 기록 (`testresults_yyyyMMdd.csv`)
 
 ### 기술 스택
 - **.NET**: 8 (WinForms, self-contained 배포 지원)
@@ -30,13 +36,19 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### 계층 구조
 ```
 MainForm (UI)
-    ↓
-LoadCellCommunication (SerialPort 래핑)
-    ↓ [RawFrameReceived 이벤트]
-    ├→ CasProtocolParser (ICasFrameParser 구현) → WeightReading
-    ├→ RawFrameLogger (진단용 raw 데이터 기록)
-    ├→ CsvDataLogger (주기적 무게 로깅)
-    └→ AlarmEvaluator (상/하한 평가)
+    ├→ LoadCellCommunication (SerialPort 래핑)
+    │   ↓ [RawFrameReceived 이벤트]
+    │   ├→ CasProtocolParser (ICasFrameParser 구현) → WeightReading
+    │   ├→ RawFrameLogger (진단용 raw 데이터 기록)
+    │   ├→ CsvDataLogger (주기적 무게 로깅)
+    │   └→ AlarmEvaluator (상/하한 평가)
+    │
+    ├→ TrendChartControl (실시간 차트)
+    │   └→ WeightReading 데이터 수신
+    │
+    └→ TestSession (세션 관리, Phase 2)
+        ├→ WeightReading 샘플 수집
+        └→ TestResultLogger (결과 CSV 로깅)
 ```
 
 ### 주요 클래스 책임
@@ -64,6 +76,21 @@ LoadCellCommunication (SerialPort 래핑)
 **설정 계층** (`AppSettings`)
 - appsettings.json에서 포트명, 보레이트, 파리티, 임계값, 로깅 주기 등을 읽기/쓰기
 - MainForm Load 시 로드, FormClosing 시 저장
+
+**Charting 계층** (`TrendChartControl`, Phase 2)
+- `Panel` 상속 + GDI+ 커스텀 드로잉으로 무게-시간 추이 시각화
+- 자동 스케일링: 포인트 범위에 따라 X/Y축 자동 확대 (10% 패딩)
+- 시각 요소: 그리드, Max/Min/Avg 수평 점선, X1/X2 수직 점선, 크로스헤어
+- 좌표 변환: `pixelX/Y = f(elapsedSeconds, weight)` — 불변식: 0-division 방지
+- **중요**: NuGet 라이브러리 금지 원칙 (산업 환경 안정성)
+
+**Testing 계층** (`TestSession`, `TestResult`, `TestResultLogger`, Phase 2)
+- `TestSession`: 세션 메타데이터(Customer/Product/LotNumber/Operator), 샘플 수집, Evaluate()
+  - `Evaluate()`: X1~X2 시간 구간으로 필터링 → Max/Min/Avg/SampleCount 계산
+  - Pass/Fail: 구간 내 **모든 샘플**이 [MinLimit, MaxLimit] 범위 안이면 Pass
+  - 표준 편향: 순간 이탈도 불량 처리 (품질 보증 엄격함)
+- `TestResult`: Pass/Fail 판정 결과 DTO (Max, Min, Avg, SampleCount, DurationSeconds, Passed, FailReason)
+- `TestResultLogger`: CSV 로깅 (`testresults_yyyyMMdd.csv`), 스레드 안전(lock), 필드 이스케이핑
 
 ---
 
@@ -97,6 +124,97 @@ CAS CI-200 시리즈 공개 매뉴얼(ManualsLib)에서 확인한 사실:
 4. **매뉴얼 확보 시**
    - 매뉴얼을 `docs/protocol-notes.md`에 정리
    - `CasProtocolParser` 구현 근거 문서화
+
+---
+
+## MainForm 레이아웃 (Phase 2 업데이트)
+
+### 클라이언트 크기 및 구성
+- **ClientSize**: 1400x950 (Phase 1: 1200x900)
+- **MenuStrip**: File(종료), Setup(측정 설정 포커스), Help(정보)
+
+### 상단 패널 (Y=10, 3개 GroupBox 가로 배치)
+| GroupBox | X | W | 내용 |
+|----------|---|---|------|
+| gbSessionInfo | 10 | 520 | Customer, Product, LotNumber, Operator (TextBox) |
+| gbTestSetting | 540 | 400 | MaxLimit/MinLimit (NumericUpDown), X1/X2 (NumericUpDown, 초 단위), 시작/종료 버튼, 상태 라벨 |
+| gbTestResult | 950 | 430 | Max/Avg/Min (레이블), Pass/Fail 배너 (색상: 녹색/빨강) |
+
+### 중앙 차트 영역 (Y=130)
+- **TrendChartControl**: 1370x380, 전폭
+- 실시간 무게 추이 표시, 마우스 크로스헤어 좌표 표시
+
+### 하단 패널 (Y=520, 기존 4개 GroupBox)
+| GroupBox | X | W | 내용 |
+|----------|---|---|------|
+| gbConnection | 10 | 340 | 포트, 보레이트, 연결 버튼 |
+| gbWeight | 360 | 300 | 무게값 (40pt 폰트), Zero 버튼 |
+| gbAlarm | 670 | 340 | Alarm 활성화, 상한/하한 (동기화 대상) |
+| gbLogging | 1020 | 360 | 로깅 활성화, 주기, 폴더 열기 |
+
+### 진단 패널 (Y=670)
+- **gbDiagnostics**: 1370x200, Raw 프레임 표시
+
+### 설정값 동기화
+- **단일 진실 소스**: `gbTestSetting`의 `nudMaxLimit`/`nudMinLimit`
+- **동기화 방향**: gbTestSetting → gbAlarm (읽기 전용 표시)
+- **타이밍**: 측정 세션 중에는 동기화 안 함 (입력 고정)
+
+---
+
+## 프로젝트 폴더 구조
+
+```
+readLoadCell/
+├── readLoadCell.sln
+├── readLoadCell/
+│   ├── readLoadCell.csproj
+│   ├── Form1.cs                      (MainForm, UI 로직)
+│   ├── Form1.Designer.cs             (UI 레이아웃, 코드 기반)
+│   │
+│   ├── Communication/
+│   │   ├── LoadCellCommunication.cs  (SerialPort 래핑, 버퍼 관리)
+│   │   └── SerialPortSettings.cs
+│   │
+│   ├── Protocol/
+│   │   ├── ICasFrameParser.cs        (인터페이스)
+│   │   ├── CasProtocolParser.cs      (콤마 구분 ASCII 파싱)
+│   │   └── WeightReading.cs          (DTO)
+│   │
+│   ├── Alarm/
+│   │   ├── AlarmEvaluator.cs
+│   │   └── AlarmState.cs
+│   │
+│   ├── Logging/
+│   │   ├── AppLogger.cs              (정보/오류 로그)
+│   │   ├── CsvDataLogger.cs          (주기적 무게 로깅)
+│   │   ├── RawFrameLogger.cs         (원문 프레임 로깅)
+│   │   └── TestResultLogger.cs       (테스트 결과 로깅, Phase 2)
+│   │
+│   ├── Settings/
+│   │   └── AppSettings.cs            (appsettings.json 관리)
+│   │
+│   ├── Charting/                     (Phase 2 신규)
+│   │   └── TrendChartControl.cs      (GDI+ 커스텀 차트)
+│   │
+│   ├── Testing/                      (Phase 2 신규)
+│   │   ├── TestSession.cs            (세션 관리, 샘플 수집)
+│   │   └── TestResult.cs             (Pass/Fail 결과 DTO)
+│   │
+│   └── Logs/                         (런타임 생성)
+│       ├── applog_yyyyMMdd.txt
+│       ├── rawlog_yyyyMMdd.txt
+│       ├── datalog_yyyyMMdd.csv
+│       └── testresults_yyyyMMdd.csv  (Phase 2)
+│
+├── appsettings.json                  (COM 설정, 임계값, 로깅)
+└── CLAUDE.md                         (이 파일)
+```
+
+**핵심 원칙**:
+- Communication/Protocol/Alarm/Logging은 순수 비즈니스 로직 (UI 의존 X)
+- MainForm은 이들을 조율하는 오케스트레이터 역할
+- Charting/Testing은 Phase 2 UI 확장용 (기존 로직 미변경)
 
 ---
 
@@ -262,20 +380,34 @@ dotnet run --project readLoadCell -- --simulator
 - [x] Alarm 계층
 - [x] 설정 영속화 (AppSettings)
 - [x] 기본 UI (연결/무게/알람/로깅/진단)
+- [x] 시뮬레이터 테스트 검증 (com0com, CasLoadCellSimulator)
 
-### Phase 2: DF-2000 스타일 UI 확장 (🔄 진행 중)
-- [x] TrendChartControl (GDI+ 커스텀 차트)
-- [x] TestSession / TestResult / TestResultLogger
-- [x] Form1.Designer.cs 레이아웃 확장 (MenuStrip + 상단 3개 GroupBox + 차트)
-- [x] Form1.cs 이벤트 핸들러 (테스트 시작/종료 + 메뉴)
-- [x] OnRawFrameReceived 확장 (차트 + 세션 연동)
-- [ ] 실제 동작 테스트 (시뮬레이터 / 실장비)
-- [ ] 성능 테스트 (장시간 안정성)
-- [ ] UI 미세 조정 (색상/글꼴/배치 등)
+### Phase 2: DF-2000 스타일 UI 확장 (✅ 완료)
+- [x] TrendChartControl (GDI+ 커스텀 차트, 400+줄)
+  - [x] 좌표 변환, 자동 스케일링, Max/Min/Avg/X1/X2 선
+  - [x] 마우스 크로스헤어, 그리드
+- [x] TestSession / TestResult / TestResultLogger (130줄)
+  - [x] 시간 구간 필터링 (X1~X2)
+  - [x] Pass/Fail 자동 판정 (All-In-Range 원칙)
+  - [x] CSV 로깅 (testresults_yyyyMMdd.csv)
+- [x] Form1.Designer.cs 레이아웃 확장
+  - [x] MenuStrip (File/Setup/Help)
+  - [x] 상단 3개 GroupBox (gbSessionInfo, gbTestSetting, gbTestResult)
+  - [x] TrendChartControl 배치
+  - [x] 기존 GroupBox 재배치 (Y=520)
+- [x] Form1.cs 이벤트 핸들러
+  - [x] 테스트 시작/종료 (BtnStartTest_Click, BtnStopTest_Click)
+  - [x] 메뉴 이벤트 (MnuExit, MnuSetupFocus, MnuHelpAbout)
+  - [x] OnRawFrameReceived 확장 (차트 + 세션 연동)
+- [x] 빌드 성공 (경고 0, 오류 0)
+- [x] UI 표시 확인 (스크린샷)
 
-### Phase 3: 최종 검증 (📋 예정)
-- [ ] 엣지 케이스 강화 테스트 (Partial/Multiple Packet, 장시간 동작)
-- [ ] 실제 CAS200 장비 연결 및 프로토콜 검증
+### Phase 3: 테스트 및 검증 (🔄 진행 중)
+- [ ] 시뮬레이터 연동 테스트 (com0com + 데이터 전송)
+- [ ] Pass/Fail 케이스 검증 (임계값 초과/정상)
+- [ ] CSV 로그 생성 확인
+- [ ] 장시간 안정성 테스트 (1시간 이상)
+- [ ] 실제 CAS200 장비 연결 (프로토콜 검증)
 - [ ] 프로토콜 문서화 (docs/protocol-notes.md)
 
 ---
