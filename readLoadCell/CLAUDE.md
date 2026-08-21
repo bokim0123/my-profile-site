@@ -250,22 +250,31 @@ dotnet run --project readLoadCell -- --simulator
 
 ## 프로젝트 상태 및 구현 체크리스트
 
-### 완료
-- [x] 아키텍처 설계 및 계획 (이 문서 기반)
+### Phase 1: 기본 통신 및 모니터링 (✅ 완료)
+- [x] 아키텍처 설계 및 계획
 - [x] 프로토콜 분석 및 불확실성 파악
 - [x] 시뮬레이터 테스트 전략 수립
+- [x] 프로젝트 뼈대 생성 (.sln, .csproj, 폴더 구조)
+- [x] `LoadCellCommunication` 구현 (버퍼 누적/델리미터 파싱)
+- [x] Protocol 계층 (`ICasFrameParser`, `CasProtocolParser`, `WeightReading`)
+- [x] Zero 명령 송신
+- [x] Logging 계층 (CSV, Raw, AppLogger)
+- [x] Alarm 계층
+- [x] 설정 영속화 (AppSettings)
+- [x] 기본 UI (연결/무게/알람/로깅/진단)
 
-### 진행 중 / 예정
-- [ ] 프로젝트 뼈대 생성 (.sln, .csproj, 폴더 구조)
-- [ ] `LoadCellCommunication` 구현 (버퍼 누적/델리미터 파싱)
-- [ ] `CasLoadCellSimulator` 구현
-- [ ] Protocol 계층 (`ICasFrameParser`, `CasProtocolParser`, `WeightReading`)
-- [ ] MainForm UI 연동
-- [ ] Zero 명령 송신
-- [ ] Logging 계층 (CSV, Raw, AppLogger)
-- [ ] Alarm 계층
-- [ ] 설정 영속화 (AppSettings)
-- [ ] 엣지 케이스 강화 테스트
+### Phase 2: DF-2000 스타일 UI 확장 (🔄 진행 중)
+- [x] TrendChartControl (GDI+ 커스텀 차트)
+- [x] TestSession / TestResult / TestResultLogger
+- [x] Form1.Designer.cs 레이아웃 확장 (MenuStrip + 상단 3개 GroupBox + 차트)
+- [x] Form1.cs 이벤트 핸들러 (테스트 시작/종료 + 메뉴)
+- [x] OnRawFrameReceived 확장 (차트 + 세션 연동)
+- [ ] 실제 동작 테스트 (시뮬레이터 / 실장비)
+- [ ] 성능 테스트 (장시간 안정성)
+- [ ] UI 미세 조정 (색상/글꼴/배치 등)
+
+### Phase 3: 최종 검증 (📋 예정)
+- [ ] 엣지 케이스 강화 테스트 (Partial/Multiple Packet, 장시간 동작)
 - [ ] 실제 CAS200 장비 연결 및 프로토콜 검증
 - [ ] 프로토콜 문서화 (docs/protocol-notes.md)
 
