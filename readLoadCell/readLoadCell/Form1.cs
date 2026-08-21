@@ -3,6 +3,8 @@ using readLoadCell.Protocol;
 using readLoadCell.Alarm;
 using readLoadCell.Logging;
 using readLoadCell.Settings;
+using readLoadCell.Testing;
+using readLoadCell.Charting;
 
 namespace readLoadCell;
 
@@ -18,6 +20,10 @@ public partial class MainForm : Form
     private DateTime _lastFrameTime = DateTime.MinValue;
     private int _totalFramesReceived;
     private int _parseFailures;
+
+    // 테스트 세션 및 차트
+    private TestSession? _activeSession;
+    private TestResult? _lastTestResult;
 
     public MainForm()
     {
@@ -66,7 +72,7 @@ public partial class MainForm : Form
         // COM 포트 목록 갱신
         RefreshAvailablePorts();
 
-        // 이벤트 핸들러 등록
+        // 이벤트 핸들러 등록 (기존)
         btnRefreshPorts.Click += BtnRefreshPorts_Click;
         btnConnect.Click += BtnConnect_Click;
         btnZero.Click += BtnZero_Click;
@@ -78,6 +84,19 @@ public partial class MainForm : Form
         nudLoggingInterval.ValueChanged += NudLoggingInterval_ValueChanged;
         chkRawLogging.CheckedChanged += ChkRawLogging_CheckedChanged;
 
+        // 테스트 시작/종료 버튼
+        btnStartTest.Click += BtnStartTest_Click;
+        btnStopTest.Click += BtnStopTest_Click;
+
+        // 메뉴 이벤트
+        mnuExit.Click += (s, e) => Close();
+        mnuSetupFocus.Click += (s, e) => gbTestSetting.Focus();
+        mnuHelpAbout.Click += MnuHelpAbout_Click;
+
+        // 임계값 동기화 (gbTestSetting ↔ gbAlarm)
+        nudMaxLimit.ValueChanged += NudTestLimit_ValueChanged;
+        nudMinLimit.ValueChanged += NudTestLimit_ValueChanged;
+
         // 설정값 UI에 반영
         cbPortName.SelectedItem = _settings?.PortName ?? "COM1";
         cbBaudRate.SelectedItem = _settings?.BaudRate ?? 38400;
@@ -87,6 +106,12 @@ public partial class MainForm : Form
         nudLoggingInterval.Value = _settings?.LoggingIntervalSeconds ?? 5;
         chkLoggingEnabled.Checked = _settings?.LoggingEnabled ?? false;
         chkRawLogging.Checked = _settings?.RawFrameLoggingEnabled ?? true;
+
+        // 테스트 설정 초기값
+        nudMaxLimit.Value = 100m;
+        nudMinLimit.Value = 0m;
+        nudX1.Value = 0m;
+        nudX2.Value = 10m;
 
         // UI 상태 초기화
         UpdateConnectionStatus(false);
@@ -224,12 +249,14 @@ public partial class MainForm : Form
             btnZero.Enabled = true;
             nudUpperLimit.Enabled = true;
             nudLowerLimit.Enabled = true;
+            btnStartTest.Enabled = true;
         }
         else
         {
             lblStatus.Text = "상태: 연결 안됨";
             lblStatus.ForeColor = Color.Gray;
             btnZero.Enabled = false;
+            btnStartTest.Enabled = false;
             cbPortName.Enabled = true;
             cbBaudRate.Enabled = true;
             UpdateWeightDisplay(null, AlarmState.Unknown);
@@ -338,7 +365,12 @@ public partial class MainForm : Form
                 _csvLogger.LogIfDue(reading, alarmState);
             }
 
-            // UI 업데이트 (TODO: 실제 컨트롤 연결)
+            // 차트 및 세션 업데이트 (측정 세션과 무관하게 차트는 항상 갱신)
+            chartTrend.AddPoint(reading);
+            if (_activeSession != null)
+                _activeSession.AddSample(reading);
+
+            // UI 업데이트
             UpdateUI(reading, alarmState);
         }
         else
@@ -363,6 +395,114 @@ public partial class MainForm : Form
         }
 
         AppLogger.Error("통신 오류", ex);
-        // TODO: UI에 오류 상태 표시
+    }
+
+    // ===== 테스트 세션 핸들러 =====
+
+    private void BtnStartTest_Click(object? sender, EventArgs e)
+    {
+        if (_communication?.IsConnected ?? false)
+        {
+            // 세션 생성 및 설정값 스냅샷
+            _activeSession = new TestSession(DateTime.Now)
+            {
+                Customer = txtCustomer.Text,
+                Product = txtProduct.Text,
+                LotNumber = txtLotNumber.Text,
+                Operator = txtOperator.Text,
+                MaxLimit = nudMaxLimit.Value > 0 ? nudMaxLimit.Value : null,
+                MinLimit = nudMinLimit.Value > 0 ? nudMinLimit.Value : null,
+                X1Seconds = nudX1.Value > 0 ? (double)nudX1.Value : null,
+                X2Seconds = nudX2.Value > 0 ? (double)nudX2.Value : null
+            };
+
+            // 차트 초기화 및 설정
+            chartTrend.StartNewSession(_activeSession.StartTime);
+            chartTrend.SetLimits(_activeSession.MaxLimit, _activeSession.MinLimit);
+            chartTrend.SetAnalysisWindow(_activeSession.X1Seconds, _activeSession.X2Seconds);
+
+            // UI 상태 갱신
+            btnStartTest.Enabled = false;
+            btnStopTest.Enabled = true;
+            lblTestStatus.Text = "측정 중...";
+            lblPassFail.Text = "측정 중";
+            lblPassFail.BackColor = Color.LightBlue;
+
+            // 임계값도 불가능하게 (측정 중에는 변경 방지)
+            nudMaxLimit.Enabled = false;
+            nudMinLimit.Enabled = false;
+            nudX1.Enabled = false;
+            nudX2.Enabled = false;
+
+            AppLogger.Info($"테스트 세션 시작: {_activeSession.Customer} / {_activeSession.Product}");
+        }
+    }
+
+    private void BtnStopTest_Click(object? sender, EventArgs e)
+    {
+        if (_activeSession == null)
+            return;
+
+        // 세션 평가
+        _lastTestResult = _activeSession.Evaluate();
+
+        // 결과 로깅
+        TestResultLogger.Log(_activeSession, _lastTestResult);
+
+        // 결과 UI 업데이트
+        lblResultMax.Text = $"Max: {_lastTestResult.Max:F2}";
+        lblResultAvg.Text = $"Avg: {_lastTestResult.Avg:F2}";
+        lblResultMin.Text = $"Min: {_lastTestResult.Min:F2}";
+
+        if (_lastTestResult.Passed)
+        {
+            lblPassFail.Text = "✓ PASS";
+            lblPassFail.BackColor = Color.LightGreen;
+            lblPassFail.ForeColor = Color.DarkGreen;
+        }
+        else
+        {
+            lblPassFail.Text = $"✗ FAIL\n{_lastTestResult.FailReason}";
+            lblPassFail.BackColor = Color.LightCoral;
+            lblPassFail.ForeColor = Color.DarkRed;
+        }
+
+        // 상태 복구
+        btnStartTest.Enabled = true;
+        btnStopTest.Enabled = false;
+        lblTestStatus.Text = "대기 중";
+
+        nudMaxLimit.Enabled = true;
+        nudMinLimit.Enabled = true;
+        nudX1.Enabled = true;
+        nudX2.Enabled = true;
+
+        _activeSession = null;
+        AppLogger.Info($"테스트 세션 종료: {(_lastTestResult.Passed ? "PASS" : "FAIL")}");
+    }
+
+    private void NudTestLimit_ValueChanged(object? sender, EventArgs e)
+    {
+        // 측정 세션 중에는 동기화하지 않음
+        if (_activeSession != null)
+            return;
+
+        // gbTestSetting의 값으로 gbAlarm 업데이트
+        if (nudMaxLimit.Value > 0)
+            nudUpperLimit.Value = nudMaxLimit.Value;
+        if (nudMinLimit.Value > 0)
+            nudLowerLimit.Value = nudMinLimit.Value;
+    }
+
+    private void MnuHelpAbout_Click(object? sender, EventArgs e)
+    {
+        MessageBox.Show(
+            "로드셀 리더 (CAS 인디케이터)\n" +
+            "DF-2000 스타일 UI\n\n" +
+            "Version: 2.0\n" +
+            "© 2026 Industrial Automation",
+            "정보",
+            MessageBoxButtons.OK,
+            MessageBoxIcon.Information);
     }
 }
