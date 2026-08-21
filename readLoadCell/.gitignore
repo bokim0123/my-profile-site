@@ -1,0 +1,17 @@
+## .NET
+bin/
+obj/
+*.csproj.user
+.vs/
+.vscode/
+
+## Logs
+Logs/
+*.log
+
+## App settings
+appsettings.*.json
+
+## System
+.DS_Store
+Thumbs.db
