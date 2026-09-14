@@ -1,0 +1,42 @@
+- generic [ref=f4e1]:
+  - banner [aria-hidden] [ref=f4e2]:
+    - generic [ref=f4e3]:
+      - link [ref=f4e38] [cursor=pointer]:
+        - /url: /
+        - generic [ref=f4e10]: Next Starter
+      - generic [ref=f4e11]:
+        - button [ref=f4e39]
+        - button [expanded] [ref=f4e40]
+  - main [aria-hidden] [ref=f4e14]:
+    - generic [ref=f4e15]:
+      - heading [level=1] [ref=f4e41]: "404"
+      - paragraph [ref=f4e20]: 요청하신 페이지를 찾을 수 없습니다.
+      - link [ref=f4e42] [cursor=pointer]:
+        - /url: /
+        - text: 홈으로 이동
+  - contentinfo [aria-hidden] [ref=f4e22]:
+    - generic [ref=f4e23]:
+      - paragraph [ref=f4e24]: © 2026 Next Starter. All rights reserved.
+      - navigation [ref=f4e25]:
+        - link [ref=f4e43] [cursor=pointer]:
+          - /url: https://nextjs.org/docs
+          - text: Next.js
+        - link [ref=f4e44] [cursor=pointer]:
+          - /url: https://ui.shadcn.com
+          - text: shadcn/ui
+        - link [ref=f4e45] [cursor=pointer]:
+          - /url: https://github.com
+          - text: GitHub
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f4e34] [cursor=pointer]
+  - alert [ref=f4e46]
+  - dialog [ref=f4e50]:
+    - heading "Next Starter" [level=2] [ref=f4e52]
+    - navigation [ref=f4e53]:
+      - link "홈" [active] [ref=f4e54] [cursor=pointer]:
+        - /url: /
+      - link "소개" [ref=f4e55] [cursor=pointer]:
+        - /url: /about
+      - link "예제" [ref=f4e56] [cursor=pointer]:
+        - /url: /examples
+    - button "Close" [ref=f4e57]

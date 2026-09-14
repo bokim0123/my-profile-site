@@ -1,0 +1,42 @@
+- generic [ref=f4e1]:
+  - banner [ref=f4e2]:
+    - generic [ref=f4e3]:
+      - link "Next Starter" [ref=f4e60] [cursor=pointer]:
+        - /url: /
+      - generic [ref=f4e11]:
+        - button "테마 변경" [ref=f4e61]
+        - button "메뉴 열기" [active] [ref=f4e62]
+  - main [ref=f4e14]:
+    - generic [ref=f4e63]:
+      - generic [ref=f4e64]:
+        - heading "예제" [level=1] [ref=f4e65]
+        - paragraph [ref=f4e66]: 자주 사용하는 화면 패턴을 참고용으로 구현했습니다.
+      - generic [ref=f4e67]:
+        - link "컴포넌트 쇼케이스 Button, Badge, Card, Tabs, Dropdown, Sheet, Toast 등 UI 컴포넌트 모음" [ref=f4e68] [cursor=pointer]:
+          - /url: /examples/components
+          - generic [ref=f4e70]:
+            - generic [ref=f4e76]: 컴포넌트 쇼케이스
+            - generic [ref=f4e79]: Button, Badge, Card, Tabs, Dropdown, Sheet, Toast 등 UI 컴포넌트 모음
+        - link "폼 예제 react-hook-form + zod 스키마 검증과 제출 처리" [ref=f4e80] [cursor=pointer]:
+          - /url: /examples/form
+          - generic [ref=f4e82]:
+            - generic [ref=f4e86]: 폼 예제
+            - generic [ref=f4e89]: react-hook-form + zod 스키마 검증과 제출 처리
+        - link "테이블 / 리스트 예제 검색, 정렬, 페이지네이션이 포함된 데이터 테이블" [ref=f4e90] [cursor=pointer]:
+          - /url: /examples/table
+          - generic [ref=f4e92]:
+            - generic [ref=f4e95]: 테이블 / 리스트 예제
+            - generic [ref=f4e98]: 검색, 정렬, 페이지네이션이 포함된 데이터 테이블
+  - contentinfo [ref=f4e22]:
+    - generic [ref=f4e23]:
+      - paragraph [ref=f4e24]: © 2026 Next Starter. All rights reserved.
+      - navigation [ref=f4e25]:
+        - link "Next.js" [ref=f4e99] [cursor=pointer]:
+          - /url: https://nextjs.org/docs
+        - link "shadcn/ui" [ref=f4e100] [cursor=pointer]:
+          - /url: https://ui.shadcn.com
+        - link "GitHub" [ref=f4e101] [cursor=pointer]:
+          - /url: https://github.com
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f4e34] [cursor=pointer]
+  - alert [ref=f4e46]: 예제

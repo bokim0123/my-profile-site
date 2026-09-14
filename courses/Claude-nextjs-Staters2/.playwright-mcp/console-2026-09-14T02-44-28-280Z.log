@@ -1,0 +1,5 @@
+[   36144ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   36444ms] [LOG] [HMR] connected @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   36729ms] [LOG] [Fast Refresh] rebuilding @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   37277ms] [LOG] [Fast Refresh] done in 653ms @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776
+[   82456ms] [LOG] submit {name: 홍길동, email: test@example.com, category: support, message: 스타터킷 폼 예제 테스트 문의입니다., agree: true} @ http://localhost:3100/_next/static/chunks/node_modules_next_dist_1e8vcs8._.js:776

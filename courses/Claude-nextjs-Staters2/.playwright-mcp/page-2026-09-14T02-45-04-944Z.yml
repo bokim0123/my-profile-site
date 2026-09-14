@@ -1,0 +1,61 @@
+- generic [active] [ref=e1]:
+  - banner [ref=e2]:
+    - generic [ref=e3]:
+      - link "Next Starter" [ref=e4] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=e11]:
+        - link "홈" [ref=e12] [cursor=pointer]:
+          - /url: /
+        - link "소개" [ref=e13] [cursor=pointer]:
+          - /url: /about
+        - link "예제" [ref=e14] [cursor=pointer]:
+          - /url: /examples
+      - button "테마 변경" [ref=e16]
+  - main [ref=e17]:
+    - generic [ref=e18]:
+      - generic [ref=e19]:
+        - heading "폼 예제" [level=1] [ref=e20]
+        - paragraph [ref=e21]: react-hook-form 과 zod 스키마로 입력값을 검증하고 제출하는 예제입니다.
+      - generic [ref=e22]:
+        - generic [ref=e23]:
+          - generic [ref=e24]: 문의하기
+          - generic [ref=e25]: 모든 항목은 필수입니다.
+        - generic [ref=e28]:
+          - generic [ref=e29]:
+            - group [ref=e30]:
+              - generic [ref=e31]: 이름
+              - textbox "이름" [ref=e32]:
+                - /placeholder: 홍길동
+            - group [ref=e33]:
+              - generic [ref=e34]: 이메일
+              - textbox "이메일" [ref=e35]:
+                - /placeholder: name@example.com
+          - group [ref=e36]:
+            - generic [ref=e37]: 문의 유형
+            - combobox "문의 유형" [ref=e38]:
+              - generic [ref=e39]: 선택하세요
+              - img [aria-hidden]: ▼
+            - textbox [aria-hidden] [ref=e40]
+          - group [ref=e41]:
+            - generic [ref=e42]: 내용
+            - textbox "내용" [ref=e43]:
+              - /placeholder: 문의 내용을 입력하세요
+            - paragraph [ref=e44]: 0 / 500자
+          - group [ref=e45]:
+            - checkbox [ref=e46]
+            - checkbox [aria-hidden] [ref=e47]
+            - generic [ref=e48]: 개인정보 수집 및 이용에 동의합니다.
+        - generic [ref=e50]:
+          - button "제출" [ref=e51]
+          - button "초기화" [ref=e52]
+  - contentinfo [ref=e53]:
+    - generic [ref=e54]:
+      - paragraph [ref=e55]: © 2026 Next Starter. All rights reserved.
+      - navigation [ref=e56]:
+        - link "Next.js" [ref=e57] [cursor=pointer]:
+          - /url: https://nextjs.org/docs
+        - link "shadcn/ui" [ref=e58] [cursor=pointer]:
+          - /url: https://ui.shadcn.com
+        - link "GitHub" [ref=e59] [cursor=pointer]:
+          - /url: https://github.com
+  - region "Notifications alt+T"

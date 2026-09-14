@@ -1,0 +1,136 @@
+- generic [ref=f2e1]:
+  - banner [ref=f2e2]:
+    - generic [ref=f2e3]:
+      - link "Next Starter" [ref=f2e4] [cursor=pointer]:
+        - /url: /
+      - navigation [ref=f2e11]:
+        - link "홈" [ref=f2e12] [cursor=pointer]:
+          - /url: /
+        - link "소개" [ref=f2e13] [cursor=pointer]:
+          - /url: /about
+        - link "예제" [ref=f2e14] [cursor=pointer]:
+          - /url: /examples
+      - generic [ref=f2e15]:
+        - button "테마 변경" [expanded] [ref=f2e16]
+        - menu "테마 변경" [active] [ref=f2e161]:
+          - group [ref=f2e162]:
+            - menuitemradio "라이트" [ref=f2e163]
+            - menuitemradio "다크" [ref=f2e164]
+            - menuitemradio "시스템" [checked] [ref=f2e165]
+  - main [ref=f2e17]:
+    - generic [ref=f2e18]:
+      - generic [ref=f2e19]:
+        - heading "컴포넌트 쇼케이스" [level=1] [ref=f2e20]
+        - paragraph [ref=f2e21]: 프로젝트에 포함된 shadcn/ui 컴포넌트의 사용 예시입니다.
+      - generic [ref=f2e22]:
+        - generic [ref=f2e23]:
+          - generic [ref=f2e24]:
+            - generic [ref=f2e25]: Button
+            - generic [ref=f2e26]: variant / size / 아이콘 조합
+          - generic [ref=f2e28]:
+            - generic [ref=f2e29]:
+              - button "Default" [ref=f2e30]
+              - button "Secondary" [ref=f2e31]
+              - button "Outline" [ref=f2e32]
+              - button "Ghost" [ref=f2e33]
+              - button "Destructive" [ref=f2e34]
+              - button "Link" [ref=f2e35]
+            - generic [ref=f2e36]:
+              - button "XS" [ref=f2e37]
+              - button "Small" [ref=f2e38]
+              - button "Default" [ref=f2e39]
+              - button "Large" [ref=f2e40]
+              - button "추가" [ref=f2e41]
+              - button "메일 보내기" [ref=f2e42]
+              - button "Disabled" [disabled]
+        - generic [ref=f2e43]:
+          - generic [ref=f2e44]: Badge & Avatar
+          - generic [ref=f2e47]:
+            - generic [ref=f2e48]:
+              - generic [ref=f2e49]: Default
+              - generic [ref=f2e50]: Secondary
+              - generic [ref=f2e51]: Outline
+              - generic [ref=f2e52]: Destructive
+            - generic [ref=f2e53]:
+              - generic [ref=f2e54]: KM
+              - generic [ref=f2e56]: JH
+              - generic [ref=f2e58]: SY
+        - generic [ref=f2e60]:
+          - generic [ref=f2e61]:
+            - generic [ref=f2e62]: Form Controls
+            - generic [ref=f2e63]: Input / Textarea / Select / Checkbox / Switch
+          - generic [ref=f2e65]:
+            - generic [ref=f2e66]:
+              - generic [ref=f2e67]: 이메일
+              - textbox "이메일" [ref=f2e68]:
+                - /placeholder: name@example.com
+            - generic [ref=f2e69]:
+              - generic [ref=f2e70]: 메시지
+              - textbox "메시지" [ref=f2e71]:
+                - /placeholder: 내용을 입력하세요
+            - generic [ref=f2e72]:
+              - generic [ref=f2e73]: 과일 선택
+              - combobox [ref=f2e74]:
+                - generic [ref=f2e75]: 선택하세요
+                - img [aria-hidden]: ▼
+              - textbox [aria-hidden] [ref=f2e76]
+            - generic [ref=f2e77]:
+              - generic [ref=f2e78]:
+                - checkbox "약관 동의" [checked] [ref=f2e168]
+                - checkbox [checked] [aria-hidden] [ref=f2e83]
+                - text: 약관 동의
+              - generic [ref=f2e84]:
+                - switch "알림 수신" [ref=f2e169]
+                - checkbox [aria-hidden] [ref=f2e86]
+                - text: 알림 수신
+        - generic [ref=f2e87]:
+          - generic [ref=f2e88]: Tabs
+          - generic [ref=f2e91]:
+            - tablist [ref=f2e92]:
+              - tab "계정" [selected] [ref=f2e93]
+              - tab "비밀번호" [ref=f2e94]
+              - tab "알림" [ref=f2e95]
+            - tabpanel "계정" [ref=f2e170]: 계정 정보를 관리하는 탭입니다.
+        - generic [ref=f2e97]:
+          - generic [ref=f2e98]: Dropdown Menu & Sheet
+          - generic [ref=f2e101]:
+            - button "내 계정" [ref=f2e102]
+            - button "Sheet 열기" [ref=f2e103]
+        - generic [ref=f2e104]:
+          - generic [ref=f2e105]: Toast (sonner)
+          - generic [ref=f2e108]:
+            - button "기본" [ref=f2e109]
+            - button "성공" [ref=f2e110]
+            - button "오류" [ref=f2e111]
+            - button "액션 포함" [ref=f2e112]
+        - generic [ref=f2e113]:
+          - generic [ref=f2e114]: Card & Separator
+          - generic [ref=f2e117]:
+            - generic [ref=f2e118]:
+              - generic [ref=f2e119]: 월간 리포트
+              - generic [ref=f2e120]: 2026년 9월 요약
+            - generic [ref=f2e121]:
+              - generic [ref=f2e122]:
+                - paragraph [ref=f2e123]: 방문자
+                - paragraph [ref=f2e124]: 12,480
+              - separator [ref=f2e125]
+              - generic [ref=f2e126]:
+                - paragraph [ref=f2e127]: 전환율
+                - paragraph [ref=f2e128]: 3.2%
+            - button "자세히 보기" [ref=f2e130]
+        - generic [ref=f2e132]:
+          - generic [ref=f2e133]: Skeleton
+          - generic [ref=f2e134]: 데이터 로딩 중 표시
+  - contentinfo [ref=f2e141]:
+    - generic [ref=f2e142]:
+      - paragraph [ref=f2e143]: © 2026 Next Starter. All rights reserved.
+      - navigation [ref=f2e144]:
+        - link "Next.js" [ref=f2e145] [cursor=pointer]:
+          - /url: https://nextjs.org/docs
+        - link "shadcn/ui" [ref=f2e146] [cursor=pointer]:
+          - /url: https://ui.shadcn.com
+        - link "GitHub" [ref=f2e147] [cursor=pointer]:
+          - /url: https://github.com
+  - region "Notifications alt+T"
+  - button "Open Next.js Dev Tools" [ref=f2e153] [cursor=pointer]
+  - alert [ref=f2e171]
