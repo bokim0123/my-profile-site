@@ -1,0 +1,5 @@
+# 독립 git 리포로 분리된 프로젝트 — 자체 원격(Claude-nextjs-Staters2.git)에서 관리한다
+Claude-nextjs-Staters2/my-app/
+
+# Playwright MCP 브라우저 테스트 로그 / 스냅샷
+Claude-nextjs-Staters2/.playwright-mcp/
