@@ -14,6 +14,9 @@ Next.js App Router 기반으로 바로 기능 개발을 시작할 수 있는 모
 | Theme | next-themes (라이트 / 다크 / 시스템) |
 | Form | react-hook-form + zod |
 | Toast | sonner |
+| Utility | clsx + tailwind-merge (`cn()`) |
+| Table | @tanstack/react-table v9 (필터 / 정렬 / 페이지네이션) |
+| Hooks | usehooks-ts (`useMediaQuery`, `useLocalStorage` 등) |
 
 ## 시작하기
 
@@ -95,6 +98,21 @@ npx shadcn@latest add accordion   # 기존 파일 덮어쓰지 않도록 --overw
   - `routeLabels`: 대시보드 Breadcrumb 라벨 (URL 세그먼트 → 표시명)
 - **Server / Client 분리**: 페이지는 Server Component로 두고, 상태·이벤트가 필요한 부분만 `_components/`에 `"use client"` 컴포넌트로 분리
 - **사이드바 열림 상태**: 쿠키(`sidebar_state`)에 저장되지만 정적 렌더링 유지를 위해 layout에서 읽지 않습니다. 새로고침 시 기본값(열림)으로 시작합니다.
+
+### 유틸리티 라이브러리 원칙
+
+유틸리티는 직접 구현하지 않고 검증된 라이브러리를 사용합니다. (상세 기준: `CLAUDE.md`)
+
+| 용도 | 라이브러리 | 적용 예 |
+|---|---|---|
+| 클래스 병합 | clsx + tailwind-merge | `src/lib/utils.ts` |
+| 테이블 필터 / 정렬 / 페이지네이션 | @tanstack/react-table v9 | `/examples/table` (`users-table.tsx`) |
+| 미디어 쿼리 | usehooks-ts `useMediaQuery` | `src/hooks/use-mobile.ts` (사이드바 모바일 전환) |
+| 로컬 저장 | usehooks-ts `useLocalStorage` | `/dashboard/settings` 알림 탭 (새로고침 후 유지) |
+| 날짜 / 배열·객체 유틸 | date-fns / es-toolkit | 필요 시 설치 |
+
+- SSR 페이지에서 usehooks-ts 훅은 `{ initializeWithValue: false }`로 hydration 불일치를 방지합니다.
+- `npx shadcn add`로 추가된 컴포넌트가 `import { cn } from "cn"`을 생성하면 `@/lib/utils`로 변경합니다.
 
 ### Base UI 기반 shadcn 사용 시 참고
 

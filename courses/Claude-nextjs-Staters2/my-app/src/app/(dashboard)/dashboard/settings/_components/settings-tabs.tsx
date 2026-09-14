@@ -1,9 +1,9 @@
 "use client"
 
-import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Trash2 } from "lucide-react"
 import { toast } from "sonner"
+import { useLocalStorage } from "usehooks-ts"
 
 import { ConfirmDialog } from "@/components/common/confirm-dialog"
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert"
@@ -30,12 +30,31 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
-const notificationItems = [
-  { id: "notify-email", label: "이메일 알림", description: "중요 공지와 보안 알림을 이메일로 받습니다." },
-  { id: "notify-marketing", label: "마케팅 정보", description: "새 기능과 이벤트 소식을 받습니다." },
+type NotificationFrequency = "realtime" | "daily" | "weekly"
+
+type NotificationSettings = {
+  email: boolean
+  marketing: boolean
+  frequency: NotificationFrequency
+}
+
+const defaultNotificationSettings: NotificationSettings = {
+  email: true,
+  marketing: false,
+  frequency: "realtime",
+}
+
+const notificationItems: {
+  id: string
+  key: "email" | "marketing"
+  label: string
+  description: string
+}[] = [
+  { id: "notify-email", key: "email", label: "이메일 알림", description: "중요 공지와 보안 알림을 이메일로 받습니다." },
+  { id: "notify-marketing", key: "marketing", label: "마케팅 정보", description: "새 기능과 이벤트 소식을 받습니다." },
 ]
 
-const frequencyItems = [
+const frequencyItems: { value: NotificationFrequency; label: string }[] = [
   { value: "realtime", label: "실시간" },
   { value: "daily", label: "하루 한 번 요약" },
   { value: "weekly", label: "주간 요약" },
@@ -43,7 +62,13 @@ const frequencyItems = [
 
 export function SettingsTabs() {
   const router = useRouter()
-  const [frequency, setFrequency] = useState("realtime")
+  // 알림 설정은 localStorage에 저장 (새로고침 후에도 유지)
+  // initializeWithValue: false → 서버/hydration 시점은 기본값, 마운트 후 저장값 반영 (hydration 불일치 방지)
+  const [notificationSettings, setNotificationSettings] = useLocalStorage<NotificationSettings>(
+    "settings:notifications",
+    defaultNotificationSettings,
+    { initializeWithValue: false }
+  )
 
   async function handleDeleteAccount() {
     // 실제 프로젝트에서는 계정 삭제 API 호출로 대체
@@ -101,12 +126,25 @@ export function SettingsTabs() {
                     <FieldLabel htmlFor={item.id}>{item.label}</FieldLabel>
                     <FieldDescription>{item.description}</FieldDescription>
                   </FieldContent>
-                  <Switch id={item.id} defaultChecked={item.id === "notify-email"} />
+                  <Switch
+                    id={item.id}
+                    checked={notificationSettings[item.key]}
+                    onCheckedChange={(checked) =>
+                      setNotificationSettings((prev) => ({ ...prev, [item.key]: checked }))
+                    }
+                  />
                 </Field>
               ))}
               <FieldSet>
                 <FieldLegend variant="label">수신 주기</FieldLegend>
-                <RadioGroup value={frequency} onValueChange={(value) => setFrequency(String(value))}>
+                <RadioGroup
+                  value={notificationSettings.frequency}
+                  onValueChange={(value) => {
+                    // 정의된 주기 값만 저장
+                    const selected = frequencyItems.find((item) => item.value === value)
+                    if (selected) setNotificationSettings((prev) => ({ ...prev, frequency: selected.value }))
+                  }}
+                >
                   {frequencyItems.map((item) => (
                     <Field key={item.value} orientation="horizontal">
                       <RadioGroupItem id={`frequency-${item.value}`} value={item.value} />
@@ -120,6 +158,7 @@ export function SettingsTabs() {
             </FieldGroup>
           </CardContent>
           <CardFooter>
+            {/* 설정 값은 변경 즉시 localStorage에 저장됨. 실제 프로젝트에서는 여기서 서버 API 저장으로 대체 */}
             <Button onClick={() => toast.success("알림 설정이 저장되었습니다.")}>저장</Button>
           </CardFooter>
         </Card>

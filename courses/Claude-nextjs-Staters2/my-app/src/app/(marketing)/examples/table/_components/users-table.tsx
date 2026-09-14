@@ -1,6 +1,19 @@
 "use client"
 
-import { useState } from "react"
+import {
+  columnFilteringFeature,
+  createColumnHelper,
+  createFilteredRowModel,
+  createPaginatedRowModel,
+  createSortedRowModel,
+  globalFilteringFeature,
+  rowPaginationFeature,
+  rowSortingFeature,
+  tableFeatures,
+  useTable,
+  type FilterFn,
+  type SortFn,
+} from "@tanstack/react-table"
 import { ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react"
 
 import type { User, UserStatus } from "@/lib/mock-data"
@@ -28,7 +41,6 @@ import {
 const PAGE_SIZE = 8
 
 type SortKey = "name" | "role" | "status" | "joinedAt"
-type SortDirection = "asc" | "desc"
 type StatusFilter = UserStatus | "all"
 
 const statusLabel: Record<UserStatus, string> = {
@@ -57,43 +69,76 @@ const columns: { key: SortKey; label: string }[] = [
   { key: "joinedAt", label: "가입일" },
 ]
 
+// TanStack Table: 필터 → 정렬 → 페이지네이션 순으로 row model 처리
+// features / columnDefs는 렌더마다 새로 만들지 않도록 모듈 범위에 둠
+const features = tableFeatures({
+  columnFilteringFeature,
+  globalFilteringFeature,
+  rowSortingFeature,
+  rowPaginationFeature,
+  filteredRowModel: createFilteredRowModel(),
+  sortedRowModel: createSortedRowModel(),
+  paginatedRowModel: createPaginatedRowModel(),
+})
+
+// 검색어: 이름 또는 이메일에 포함 (대소문자 무시)
+const keywordFilterFn: FilterFn<typeof features, User> = (row, _columnId, filterValue) => {
+  const keyword = String(filterValue ?? "").trim().toLowerCase()
+  const user = row.original
+  return (
+    keyword === "" ||
+    user.name.toLowerCase().includes(keyword) ||
+    user.email.toLowerCase().includes(keyword)
+  )
+}
+
+// 상태 필터: 값이 없으면(전체) TanStack이 필터 자체를 제거하므로 일치 여부만 비교
+const statusFilterFn: FilterFn<typeof features, User> = (row, columnId, filterValue) =>
+  row.getValue(columnId) === filterValue
+
+// 한글 가나다순 정렬 (내림차순 반전은 TanStack이 처리)
+const koreanSortFn: SortFn<typeof features, User> = (rowA, rowB, columnId) =>
+  rowA.getValue<string>(columnId).localeCompare(rowB.getValue<string>(columnId), "ko")
+
+const columnHelper = createColumnHelper<typeof features, User>()
+const columnDefs = columnHelper.columns([
+  columnHelper.accessor("name", { sortFn: koreanSortFn }),
+  columnHelper.accessor("email", {}),
+  columnHelper.accessor("role", { sortFn: koreanSortFn }),
+  columnHelper.accessor("status", { sortFn: koreanSortFn, filterFn: statusFilterFn }),
+  columnHelper.accessor("joinedAt", { sortFn: koreanSortFn }),
+])
+
 export function UsersTable({ data }: { data: User[] }) {
-  const [query, setQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<StatusFilter>("all")
-  const [sortKey, setSortKey] = useState<SortKey>("joinedAt")
-  const [sortDirection, setSortDirection] = useState<SortDirection>("desc")
-  const [page, setPage] = useState(1)
-
-  // 1) 검색 + 상태 필터
-  const keyword = query.trim().toLowerCase()
-  const filtered = data.filter((user) => {
-    const matchesKeyword =
-      keyword === "" ||
-      user.name.toLowerCase().includes(keyword) ||
-      user.email.toLowerCase().includes(keyword)
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter
-    return matchesKeyword && matchesStatus
+  const table = useTable({
+    features,
+    columns: columnDefs,
+    data,
+    globalFilterFn: keywordFilterFn,
+    enableMultiSort: false,
+    enableSortingRemoval: false, // asc ↔ desc 토글만 (정렬 해제 없음)
+    sortDescFirst: false, // 새 컬럼 클릭 시 오름차순부터
+    initialState: {
+      sorting: [{ id: "joinedAt", desc: true }],
+      pagination: { pageIndex: 0, pageSize: PAGE_SIZE },
+    },
   })
 
-  // 2) 정렬 (원본 배열 변경 방지를 위해 복사 후 정렬)
-  const sorted = [...filtered].sort((a, b) => {
-    const result = a[sortKey].localeCompare(b[sortKey], "ko")
-    return sortDirection === "asc" ? result : -result
-  })
+  // 화면 표시용 현재 상태 (table.state 구독 → 상태 변경 시 재렌더링)
+  const query = String(table.state.globalFilter ?? "")
+  const statusFilterValue = table.state.columnFilters.find((filter) => filter.id === "status")?.value
+  const statusFilter =
+    statusFilterItems.find((item) => item.value === statusFilterValue)?.value ?? "all"
+  const currentSort = table.state.sorting[0]
 
-  // 3) 페이지네이션 (필터 결과가 줄어도 범위를 벗어나지 않도록 보정)
-  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
-  const currentPage = Math.min(page, totalPages)
-  const pageItems = sorted.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
+  const pageItems = table.getRowModel().rows.map((row) => row.original)
+  const filteredCount = table.getFilteredRowModel().rows.length
+  const currentPage = table.state.pagination.pageIndex + 1
+  const totalPages = Math.max(1, table.getPageCount())
 
   function handleSort(key: SortKey) {
-    if (sortKey === key) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
-    } else {
-      setSortKey(key)
-      setSortDirection("asc")
-    }
-    setPage(1)
+    table.getColumn(key)?.toggleSorting()
+    table.setPageIndex(0)
   }
 
   return (
@@ -103,8 +148,8 @@ export function UsersTable({ data }: { data: User[] }) {
         <SearchInput
           value={query}
           onValueChange={(value) => {
-            setQuery(value)
-            setPage(1)
+            table.setGlobalFilter(value)
+            table.setPageIndex(0)
           }}
           placeholder="이름 또는 이메일 검색"
           className="flex-1"
@@ -114,8 +159,9 @@ export function UsersTable({ data }: { data: User[] }) {
           items={statusFilterItems}
           value={statusFilter}
           onValueChange={(value) => {
-            setStatusFilter(value ?? "all")
-            setPage(1)
+            // "전체"는 필터 값 제거(undefined)로 처리
+            table.getColumn("status")?.setFilterValue(value === "all" || value === null ? undefined : value)
+            table.setPageIndex(0)
           }}
         >
           <SelectTrigger className="w-full sm:w-36" aria-label="상태 필터">
@@ -146,9 +192,9 @@ export function UsersTable({ data }: { data: User[] }) {
                     onClick={() => handleSort(column.key)}
                   >
                     {column.label}
-                    {sortKey !== column.key ? (
+                    {currentSort?.id !== column.key ? (
                       <ArrowUpDown className="text-muted-foreground" />
-                    ) : sortDirection === "asc" ? (
+                    ) : !currentSort.desc ? (
                       <ArrowUp />
                     ) : (
                       <ArrowDown />
@@ -211,9 +257,9 @@ export function UsersTable({ data }: { data: User[] }) {
       <DataPagination
         page={currentPage}
         totalPages={totalPages}
-        totalCount={sorted.length}
+        totalCount={filteredCount}
         unit="명"
-        onPageChange={setPage}
+        onPageChange={(nextPage) => table.setPageIndex(nextPage - 1)}
       />
     </div>
   )
